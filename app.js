@@ -4,10 +4,14 @@ const ApiError = require("./app/api-error");
 
 const app = express();
 const authRouter = require("./app/routes/auth.route");
+const danhMucRouter = require("./app/routes/danh-muc.route");
+const thuongHieuRouter = require("./app/routes/thuong-hieu.route");
 
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRouter);
+app.use("/api/danh-muc", danhMucRouter);
+app.use("/api/thuong-hieu", thuongHieuRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Website bán hàng văn phòng phẩm" });
