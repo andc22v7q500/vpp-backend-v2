@@ -3,6 +3,8 @@ const express = require("express");
 const sanpham = require("../controllers/san-pham.controller");
 const nhanVienAuth = require("../middlewares/nhan-vien.auth.middleware");
 const mauma = require("../controllers/mau-ma-san-pham.controller");
+const hinhanh = require("../controllers/hinh-anh.controller");
+const upload = require("../middlewares/upload.middleware"); // Import middleware upload
 
 const router = express.Router();
 
@@ -20,5 +22,11 @@ router
 
 // Tạo mẫu mã cho một sản phẩm cụ thể
 router.route("/:productId/mau-ma").post([nhanVienAuth], mauma.create);
+
+// Upload nhiều hình ảnh cho một sản phẩm
+
+router
+  .route("/:productId/hinh-anh")
+  .post([nhanVienAuth, upload.array("images", 5)], hinhanh.addImages);
 
 module.exports = router;
