@@ -2,6 +2,7 @@
 const express = require("express");
 const sanpham = require("../controllers/san-pham.controller");
 const nhanVienAuth = require("../middlewares/nhan-vien.auth.middleware");
+const mauma = require("../controllers/mau-ma-san-pham.controller");
 
 const router = express.Router();
 
@@ -16,5 +17,8 @@ router
   .route("/:id")
   .put([nhanVienAuth], sanpham.update)
   .delete([nhanVienAuth], sanpham.delete);
+
+// Tạo mẫu mã cho một sản phẩm cụ thể
+router.route("/:productId/mau-ma").post([nhanVienAuth], mauma.create);
 
 module.exports = router;

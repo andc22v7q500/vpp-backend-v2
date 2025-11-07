@@ -7,6 +7,7 @@ const authRouter = require("./app/routes/auth.route");
 const danhMucRouter = require("./app/routes/danh-muc.route");
 const thuongHieuRouter = require("./app/routes/thuong-hieu.route");
 const sanPhamRouter = require("./app/routes/san-pham.route");
+const mauMaRouter = require("./app/routes/mau-ma-san-pham.route");
 
 app.use(cors());
 app.use(express.json());
@@ -14,6 +15,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/danh-muc", danhMucRouter);
 app.use("/api/thuong-hieu", thuongHieuRouter);
 app.use("/api/san-pham", sanPhamRouter);
+app.use("/api/mau-ma", mauMaRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Website bán hàng văn phòng phẩm" });
