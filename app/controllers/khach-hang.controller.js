@@ -83,3 +83,38 @@ exports.signIn = async (req, res, next) => {
 };
 
 // (Các hàm CRUD khác cho khách hàng tự quản lý profile sẽ được thêm sau)
+// Lấy thông tin cá nhân của người dùng đang đăng nhập
+exports.getProfile = async (req, res, next) => {
+  try {
+    // Middleware đã xác thực và lưu user vào req.user
+    const userProfile = await KhachHangService.findById(req.user.id);
+    if (!userProfile) {
+      return next(new ApiError(404, "Không tìm thấy khách hàng"));
+    }
+    return res.send(userProfile);
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi lấy thông tin cá nhân"));
+  }
+};
+
+// Cho phép khách hàng tự cập nhật thông tin cá nhân
+exports.updateProfile = async (req, res, next) => {
+  if (Object.keys(req.body).length === 0) {
+    return next(new ApiError(400, "Dữ liệu cập nhật không được để trống"));
+  }
+  try {
+    const document = await KhachHangService.updateProfile(
+      req.user.id,
+      req.body
+    );
+    if (!document) {
+      return next(new ApiError(404, "Không tìm thấy khách hàng"));
+    }
+    return res.send({
+      message: "Thông tin cá nhân đã được cập nhật",
+      data: document,
+    });
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi cập nhật thông tin cá nhân"));
+  }
+};

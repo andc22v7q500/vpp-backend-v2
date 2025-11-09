@@ -59,6 +59,7 @@ class KhachHangService {
    * Không cho phép cập nhật email hay mật khẩu ở hàm này.
    */
   async updateProfile(id, payload) {
+    // Lấy thông tin cũ để điền vào những trường không được cập nhật
     const [currentUserRows] = await pool.execute(
       "SELECT * FROM khach_hang WHERE id = ?",
       [id]
@@ -66,6 +67,7 @@ class KhachHangService {
     if (currentUserRows.length === 0) return null;
     const currentUser = currentUserRows[0];
 
+    // Chỉ cho phép cập nhật họ tên và số điện thoại
     const updatedUser = {
       ho_ten:
         payload.ho_ten !== undefined ? payload.ho_ten : currentUser.ho_ten,
@@ -77,13 +79,14 @@ class KhachHangService {
 
     const sql =
       "UPDATE khach_hang SET ho_ten = ?, so_dien_thoai = ? WHERE id = ?";
+
     await pool.execute(sql, [
       updatedUser.ho_ten,
       updatedUser.so_dien_thoai,
       id,
     ]);
 
-    return this.findById(id);
+    return this.findById(id); // Trả về thông tin mới nhất (không có mật khẩu)
   }
 
   // Các hàm khác dành cho Admin quản lý (nếu cần)
