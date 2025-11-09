@@ -12,6 +12,7 @@ const mauMaRouter = require("./app/routes/mau-ma-san-pham.route");
 const hinhAnhRouter = require("./app/routes/hinh-anh.route");
 const khachHangRouter = require("./app/routes/khach-hang.route");
 const diaChiRouter = require("./app/routes/dia-chi.route");
+const gioHangRouter = require("./app/routes/gio-hang.route");
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/api/hinh-anh", hinhAnhRouter);
 app.use("/api/khach-hang", khachHangRouter);
 app.use("/api/dia-chi", diaChiRouter);
+app.use("/api/gio-hang", gioHangRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Website bán hàng văn phòng phẩm" });
