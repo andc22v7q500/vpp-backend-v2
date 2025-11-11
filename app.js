@@ -13,6 +13,9 @@ const hinhAnhRouter = require("./app/routes/hinh-anh.route");
 const khachHangRouter = require("./app/routes/khach-hang.route");
 const diaChiRouter = require("./app/routes/dia-chi.route");
 const gioHangRouter = require("./app/routes/gio-hang.route");
+const donHangRouter = require("./app/routes/don-hang.route");
+const adminRouter = require("./app/routes/admin.route");
+const danhGiaRouter = require("./app/routes/danh-gia.route");
 
 app.use(cors());
 app.use(express.json());
@@ -26,6 +29,9 @@ app.use("/api/hinh-anh", hinhAnhRouter);
 app.use("/api/khach-hang", khachHangRouter);
 app.use("/api/dia-chi", diaChiRouter);
 app.use("/api/gio-hang", gioHangRouter);
+app.use("/api/don-hang", donHangRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/danh-gia", danhGiaRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Website bán hàng văn phòng phẩm" });
