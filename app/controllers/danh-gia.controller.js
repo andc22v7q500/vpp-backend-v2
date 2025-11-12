@@ -33,4 +33,31 @@ exports.create = async (req, res, next) => {
   }
 };
 
-// (Các hàm cho Admin như findAllForAdmin, deleteForAdmin sẽ được thêm vào đây sau)
+/**
+ * [ADMIN] Lấy danh sách tất cả các đánh giá.
+ */
+exports.findAllForAdmin = async (req, res, next) => {
+  try {
+    const documents = await DanhGiaService.findAll();
+    return res.send(documents);
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi lấy danh sách đánh giá"));
+  }
+};
+
+/**
+ * [ADMIN] Xóa một đánh giá.
+ */
+exports.deleteForAdmin = async (req, res, next) => {
+  try {
+    const deleted = await DanhGiaService.delete(req.params.id);
+    if (!deleted) {
+      return next(new ApiError(404, "Không tìm thấy đánh giá"));
+    }
+    return res.send({ message: "Đánh giá đã được xóa thành công" });
+  } catch (error) {
+    return next(
+      new ApiError(500, `Lỗi khi xóa đánh giá với id=${req.params.id}`)
+    );
+  }
+};

@@ -43,7 +43,35 @@ class DanhGiaService {
     return { id: result.insertId, ...payload };
   }
 
-  // (Các hàm cho Admin sẽ được đặt ở đây sau)
+  /**
+   * [ADMIN] Lấy tất cả các đánh giá trong hệ thống.
+   * JOIN để lấy thêm tên khách hàng và tên sản phẩm cho dễ hiển thị.
+   */
+  async findAll() {
+    const sql = `
+            SELECT 
+                dg.id, dg.so_sao, dg.binh_luan, dg.ngay_tao,
+                kh.ho_ten AS ten_khach_hang,
+                sp.ten_san_pham
+            FROM danh_gia_san_pham AS dg
+            JOIN khach_hang AS kh ON dg.ma_khach_hang = kh.id
+            JOIN san_pham AS sp ON dg.ma_san_pham = sp.id
+            ORDER BY dg.id DESC
+        `;
+    const [rows] = await pool.execute(sql);
+    return rows;
+  }
+
+  /**
+   * [ADMIN] Xóa một đánh giá dựa trên ID.
+   */
+  async delete(id) {
+    const [result] = await pool.execute(
+      "DELETE FROM danh_gia_san_pham WHERE id = ?",
+      [id]
+    );
+    return result.affectedRows > 0;
+  }
 }
 
 module.exports = new DanhGiaService();

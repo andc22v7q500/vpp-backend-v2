@@ -118,3 +118,35 @@ exports.updateProfile = async (req, res, next) => {
     return next(new ApiError(500, "Lỗi khi cập nhật thông tin cá nhân"));
   }
 };
+/**
+ * [ADMIN] Lấy danh sách tất cả khách hàng.
+ */
+exports.findAllForAdmin = async (req, res, next) => {
+  try {
+    const documents = await KhachHangService.findAll();
+    return res.send(documents);
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi lấy danh sách khách hàng"));
+  }
+};
+
+/**
+ * [ADMIN] Xóa một khách hàng.
+ */
+exports.deleteForAdmin = async (req, res, next) => {
+  try {
+    const deleted = await KhachHangService.delete(req.params.id);
+    if (!deleted) {
+      return next(new ApiError(404, "Không tìm thấy khách hàng"));
+    }
+    return res.send({ message: "Khách hàng đã được xóa thành công" });
+  } catch (error) {
+    // Bắt lỗi nghiệp vụ từ service
+    if (error instanceof ApiError) {
+      return next(error);
+    }
+    return next(
+      new ApiError(500, `Lỗi khi xóa khách hàng với id=${req.params.id}`)
+    );
+  }
+};

@@ -19,17 +19,47 @@ class SanPhamService {
   }
 
   // Hàm lấy tất cả sản phẩm (bản tóm tắt)
-  async findAll() {
-    const sql = `
+  async findAll(query) {
+    // query object sẽ chứa các tham số như { search: 'abc', danhmuc: '1', ... }
+    const { search, danhmuc, thuonghieu } = query;
+
+    // Bắt đầu câu lệnh SQL
+    let sql = `
             SELECT 
                 sp.id, sp.ten_san_pham,
-                dm.ten_danh_muc, 
-                th.ten_thuong_hieu
+                (SELECT url_hinh_anh FROM hinh_anh_san_pham WHERE ma_san_pham = sp.id LIMIT 1) AS hinh_anh_dai_dien,
+                MIN(mms.gia_ban) AS gia_thap_nhat 
             FROM san_pham AS sp
-            JOIN danh_muc AS dm ON sp.ma_danh_muc = dm.id
-            JOIN thuong_hieu AS th ON sp.ma_thuong_hieu = th.id
+            LEFT JOIN danh_muc AS dm ON sp.ma_danh_muc = dm.id
+            LEFT JOIN thuong_hieu AS th ON sp.ma_thuong_hieu = th.id
+            LEFT JOIN mau_ma_san_pham AS mms ON sp.id = mms.ma_san_pham
         `;
-    const [rows] = await pool.execute(sql);
+
+    const params = [];
+    const whereClauses = [];
+
+    if (search) {
+      whereClauses.push("sp.ten_san_pham LIKE ?");
+      params.push(`%${search}%`);
+    }
+    if (danhmuc) {
+      whereClauses.push("sp.ma_danh_muc = ?");
+      params.push(danhmuc);
+    }
+    if (thuonghieu) {
+      whereClauses.push("sp.ma_thuong_hieu = ?");
+      params.push(thuonghieu);
+    }
+
+    // Nếu có điều kiện lọc, thêm mệnh đề WHERE
+    if (whereClauses.length > 0) {
+      sql += " WHERE " + whereClauses.join(" AND ");
+    }
+
+    // Thêm GROUP BY để tính giá thấp nhất cho mỗi sản phẩm
+    sql += " GROUP BY sp.id, sp.ten_san_pham, hinh_anh_dai_dien";
+
+    const [rows] = await pool.execute(sql, params);
     return rows;
   }
 

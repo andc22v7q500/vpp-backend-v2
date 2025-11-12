@@ -30,7 +30,9 @@ exports.create = async (req, res, next) => {
 // [PUBLIC] Lấy danh sách tất cả sản phẩm
 exports.findAll = async (req, res, next) => {
   try {
-    const documents = await SanPhamService.findAll();
+    // req.query chính là object chứa các tham số từ URL
+    // Ví dụ: /api/san-pham?search=abc -> req.query = { search: 'abc' }
+    const documents = await SanPhamService.findAll(req.query);
     return res.send(documents);
   } catch (error) {
     console.error("FIND ALL PRODUCTS ERROR:", error);

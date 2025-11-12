@@ -103,6 +103,78 @@ class KhachHangService {
     ]);
     return result.affectedRows > 0;
   }
+
+  /**
+   * [ADMIN] Lấy danh sách tất cả khách hàng (không lấy mật khẩu).
+   */
+  async findAll() {
+    const [rows] = await pool.execute(
+      "SELECT id, ho_ten, email, so_dien_thoai FROM khach_hang"
+    );
+    return rows;
+  }
+
+  /**
+   * [ADMIN] Xóa một khách hàng.
+   * Cần cẩn thận vì nó sẽ gây lỗi nếu khách hàng này đã có đơn hàng (do ràng buộc khóa ngoại).
+   * Trong thực tế, ta thường không xóa cứng mà chỉ "vô hiệu hóa".
+   * Nhưng trong phạm vi tiểu luận, xóa cứng là chấp nhận được.
+   */
+  async delete(id) {
+    // Transaction để đảm bảo xóa các dữ liệu liên quan
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Xóa các dữ liệu phụ thuộc trước
+      await connection.execute(
+        "DELETE FROM danh_gia_san_pham WHERE ma_khach_hang = ?",
+        [id]
+      );
+      await connection.execute("DELETE FROM dia_chi WHERE ma_khach_hang = ?", [
+        id,
+      ]);
+      // Lưu ý: Đơn hàng là lịch sử quan trọng, thường không xóa. Nếu muốn xóa, phải xóa chi_tiet_don_hang trước.
+      // Để đơn giản, ta sẽ không xóa đơn hàng liên quan. Nếu CSDL có ràng buộc ON DELETE RESTRICT, lệnh xóa khách hàng sẽ thất bại nếu họ có đơn hàng.
+
+      // Xóa giỏ hàng
+      const [cart] = await connection.execute(
+        "SELECT id FROM gio_hang WHERE ma_khach_hang = ?",
+        [id]
+      );
+      if (cart.length > 0) {
+        await connection.execute(
+          "DELETE FROM chi_tiet_gio_hang WHERE ma_gio_hang = ?",
+          [cart[0].id]
+        );
+        await connection.execute(
+          "DELETE FROM gio_hang WHERE ma_khach_hang = ?",
+          [id]
+        );
+      }
+
+      // Cuối cùng, xóa khách hàng
+      const [result] = await connection.execute(
+        "DELETE FROM khach_hang WHERE id = ?",
+        [id]
+      );
+
+      await connection.commit();
+      return result.affectedRows > 0;
+    } catch (error) {
+      await connection.rollback();
+      // Nếu lỗi do khóa ngoại (khách đã có đơn hàng), trả về thông báo thân thiện
+      if (error.code === "ER_ROW_IS_REFERENCED_2") {
+        throw new ApiError(
+          409,
+          "Không thể xóa khách hàng này vì đã có lịch sử đơn hàng."
+        );
+      }
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
 }
 
 module.exports = new KhachHangService();
