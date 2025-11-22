@@ -12,4 +12,6 @@ router.use(khachHangAuth);
 // Endpoint rất logic: "Gửi một đánh giá cho một sản phẩm cụ thể"
 router.route("/san-pham/:productId").post(danhgia.create);
 
+router.get("/san-pham/:productId/permission", danhgia.checkPermission);
+
 module.exports = router;

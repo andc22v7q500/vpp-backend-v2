@@ -61,3 +61,15 @@ exports.deleteForAdmin = async (req, res, next) => {
     );
   }
 };
+
+exports.checkPermission = async (req, res, next) => {
+  try {
+    const canReview = await DanhGiaService.checkUserPermission(
+      req.user.id,
+      req.params.productId
+    );
+    return res.send({ canReview });
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi kiểm tra quyền đánh giá"));
+  }
+};

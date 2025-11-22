@@ -97,7 +97,11 @@ class DonHangService {
       );
 
       await connection.commit();
-      return { orderId: newOrderId, message: "Đặt hàng thành công!" };
+      return {
+        orderId: newOrderId,
+        message: "Đặt hàng thành công!",
+        totalAmount: tong_tien, // <--- Thêm dòng này
+      };
     } catch (error) {
       await connection.rollback();
       throw error;

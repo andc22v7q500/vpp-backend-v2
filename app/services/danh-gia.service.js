@@ -72,6 +72,17 @@ class DanhGiaService {
     );
     return result.affectedRows > 0;
   }
+  async checkUserPermission(userId, productId) {
+    const sql = `
+        SELECT COUNT(*) AS count
+        FROM don_hang dh
+        JOIN chi_tiet_don_hang ctdh ON dh.id = ctdh.ma_don_hang
+        JOIN mau_ma_san_pham mms ON ctdh.ma_mau_ma = mms.id
+        WHERE dh.ma_khach_hang = ? AND mms.ma_san_pham = ? AND dh.trang_thai = 'hoan_thanh'
+    `;
+    const [rows] = await pool.execute(sql, [userId, productId]);
+    return rows[0].count > 0;
+  }
 }
 
 module.exports = new DanhGiaService();

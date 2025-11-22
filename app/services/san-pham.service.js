@@ -25,15 +25,16 @@ class SanPhamService {
 
     // Bắt đầu câu lệnh SQL
     let sql = `
-            SELECT 
-                sp.id, sp.ten_san_pham,
-                (SELECT url_hinh_anh FROM hinh_anh_san_pham WHERE ma_san_pham = sp.id LIMIT 1) AS hinh_anh_dai_dien,
-                MIN(mms.gia_ban) AS gia_thap_nhat 
-            FROM san_pham AS sp
-            LEFT JOIN danh_muc AS dm ON sp.ma_danh_muc = dm.id
-            LEFT JOIN thuong_hieu AS th ON sp.ma_thuong_hieu = th.id
-            LEFT JOIN mau_ma_san_pham AS mms ON sp.id = mms.ma_san_pham
-        `;
+        SELECT 
+            sp.id, sp.ten_san_pham,
+            (SELECT url_hinh_anh FROM hinh_anh_san_pham WHERE ma_san_pham = sp.id LIMIT 1) AS hinh_anh_dai_dien,
+            MIN(mms.gia_ban) AS gia_thap_nhat,
+            MAX(mms.gia_ban) AS gia_cao_nhat  -- <--- DÒNG MỚI
+        FROM san_pham AS sp
+        LEFT JOIN danh_muc AS dm ON sp.ma_danh_muc = dm.id
+        LEFT JOIN thuong_hieu AS th ON sp.ma_thuong_hieu = th.id
+        LEFT JOIN mau_ma_san_pham AS mms ON sp.id = mms.ma_san_pham
+    `;
 
     const params = [];
     const whereClauses = [];
@@ -92,6 +93,16 @@ class SanPhamService {
         [id]
       );
       product.hinh_anh = hinhAnhRows;
+      // 4. LẤY DANH SÁCH ĐÁNH GIÁ (Phần mới)
+      const sqlReviews = `
+            SELECT dg.*, kh.ho_ten AS ten_khach_hang
+            FROM danh_gia_san_pham AS dg
+            JOIN khach_hang AS kh ON dg.ma_khach_hang = kh.id
+            WHERE dg.ma_san_pham = ?
+            ORDER BY dg.id DESC
+        `;
+      const [reviewRows] = await connection.execute(sqlReviews, [id]);
+      product.danh_gia = reviewRows; // Gán vào thuộc tính mới
 
       return product;
     } finally {

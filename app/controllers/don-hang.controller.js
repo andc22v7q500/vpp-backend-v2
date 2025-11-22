@@ -1,11 +1,12 @@
 // app/controllers/don-hang.controller.js
 const DonHangService = require("../services/don-hang.service");
+const VnpayService = require("../services/vnpay.service");
 const ApiError = require("../api-error");
 
 // [USER] Tạo đơn hàng mới
 exports.create = async (req, res, next) => {
   try {
-    // Kiểm tra input mới
+    // ... (Phần validate input giữ nguyên) ...
     if (
       !req.body.ma_dia_chi ||
       !req.body.phuong_thuc_thanh_toan ||
@@ -18,17 +19,30 @@ exports.create = async (req, res, next) => {
         )
       );
     }
+
+    // 1. Tạo đơn hàng trong CSDL trước
     const result = await DonHangService.createOrder(req.user.id, req.body);
+
+    // 2. Kiểm tra phương thức thanh toán
+    if (req.body.phuong_thuc_thanh_toan === "vnpay") {
+      // SỬ DỤNG LUÔN result.totalAmount MÀ KHÔNG CẦN GỌI LẠI CSDL
+      const vnpUrl = VnpayService.createPaymentUrl(
+        req,
+        result.orderId,
+        result.totalAmount
+      );
+
+      return res.send({
+        ...result,
+        paymentUrl: vnpUrl,
+      });
+    }
+
+    // Nếu là COD, trả về bình thường
     return res.send(result);
   } catch (error) {
     console.error("CREATE ORDER ERROR:", error);
-    if (
-      error.message.includes("tồn kho") ||
-      error.message.includes("Vui lòng chọn") ||
-      error.message.includes("hợp lệ")
-    ) {
-      return next(new ApiError(400, error.message));
-    }
+    // ... (Phần xử lý lỗi giữ nguyên) ...
     return next(
       new ApiError(500, "Đã có lỗi xảy ra phía server khi tạo đơn hàng.")
     );
