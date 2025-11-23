@@ -117,6 +117,7 @@ class DonHangService {
     const sql = `
             SELECT 
                 dh.id, 
+                dh.ma_khach_hang,
                 dh.tong_tien, 
                 dh.trang_thai, 
                 dh.ngay_dat,

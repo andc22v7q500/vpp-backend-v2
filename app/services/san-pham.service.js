@@ -29,7 +29,9 @@ class SanPhamService {
             sp.id, sp.ten_san_pham,
             (SELECT url_hinh_anh FROM hinh_anh_san_pham WHERE ma_san_pham = sp.id LIMIT 1) AS hinh_anh_dai_dien,
             MIN(mms.gia_ban) AS gia_thap_nhat,
-            MAX(mms.gia_ban) AS gia_cao_nhat  -- <--- DÒNG MỚI
+            MAX(mms.gia_ban) AS gia_cao_nhat,
+            dm.ten_danh_muc,      
+            th.ten_thuong_hieu   
         FROM san_pham AS sp
         LEFT JOIN danh_muc AS dm ON sp.ma_danh_muc = dm.id
         LEFT JOIN thuong_hieu AS th ON sp.ma_thuong_hieu = th.id
@@ -58,8 +60,8 @@ class SanPhamService {
     }
 
     // Thêm GROUP BY để tính giá thấp nhất cho mỗi sản phẩm
-    sql += " GROUP BY sp.id, sp.ten_san_pham, hinh_anh_dai_dien";
-
+    sql +=
+      " GROUP BY sp.id, sp.ten_san_pham, sp.mo_ta, hinh_anh_dai_dien, dm.ten_danh_muc, th.ten_thuong_hieu";
     const [rows] = await pool.execute(sql, params);
     return rows;
   }
