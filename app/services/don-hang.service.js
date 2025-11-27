@@ -239,6 +239,44 @@ class DonHangService {
       connection.release();
     }
   }
+
+  /**
+   * [ADMIN] Lấy chi tiết đơn hàng kèm danh sách sản phẩm
+   */
+  async findByIdForAdmin(id) {
+    const connection = await pool.getConnection();
+    try {
+      // 1. Thông tin chung
+      const sqlOrder = `
+                SELECT dh.*, kh.ho_ten AS ten_khach_hang, kh.email, kh.so_dien_thoai
+                FROM don_hang AS dh
+                JOIN khach_hang AS kh ON dh.ma_khach_hang = kh.id
+                WHERE dh.id = ?
+            `;
+      const [orderRows] = await connection.execute(sqlOrder, [id]);
+      if (orderRows.length === 0) return null;
+      const order = orderRows[0];
+
+      // 2. Chi tiết sản phẩm
+      const sqlDetails = `
+                SELECT 
+                    ctdh.*, 
+                    mms.ten_mau_ma, 
+                    sp.ten_san_pham,
+                    (SELECT url_hinh_anh FROM hinh_anh_san_pham WHERE ma_san_pham = sp.id LIMIT 1) AS hinh_anh_dai_dien
+                FROM chi_tiet_don_hang AS ctdh
+                JOIN mau_ma_san_pham AS mms ON ctdh.ma_mau_ma = mms.id
+                JOIN san_pham AS sp ON mms.ma_san_pham = sp.id
+                WHERE ctdh.ma_don_hang = ?
+            `;
+      const [details] = await connection.execute(sqlDetails, [id]);
+      order.chi_tiet = details;
+
+      return order;
+    } finally {
+      connection.release();
+    }
+  }
 }
 
 module.exports = new DonHangService();

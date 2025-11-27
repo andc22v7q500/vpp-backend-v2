@@ -128,3 +128,15 @@ exports.findOneForUser = async (req, res, next) => {
     );
   }
 };
+
+exports.findOneOrderAdmin = async (req, res, next) => {
+  try {
+    const document = await DonHangService.findByIdForAdmin(req.params.id);
+    if (!document) {
+      return next(new ApiError(404, "Không tìm thấy đơn hàng"));
+    }
+    return res.send(document);
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi lấy chi tiết đơn hàng"));
+  }
+};

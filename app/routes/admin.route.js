@@ -18,6 +18,10 @@ router.use(nhanVienAuth);
 router.route("/don-hang").get(donHangController.findAllOrders);
 
 router
+  .route("/don-hang/:id") // API mới
+  .get(donHangController.findOneOrderAdmin); //
+
+router
   .route("/don-hang/:id/trang-thai")
   .put(donHangController.updateOrderStatus);
 
