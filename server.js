@@ -57,9 +57,7 @@ io.on("connection", (socket) => {
       const botReply = await ChatService.getResponse(msg);
       socket.emit("bot-reply", botReply);
     }
-    // Vẫn gọi Bot trả lời tự động (nếu muốn giữ cả 2)
-    // Hoặc em có thể thêm logic: Nếu đã bấm "Gặp nhân viên" thì Bot im lặng.
-    // Tạm thời cứ để Bot trả lời cho xôm tụ:
+
     // const botReply = await ChatService.getResponse(msg);
     // socket.emit("bot-reply", botReply);
   });
