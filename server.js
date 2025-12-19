@@ -18,25 +18,67 @@ const io = new Server(httpServer, {
 });
 
 // Lắng nghe kết nối từ client
+// Lưu danh sách khách hàng đang cần hỗ trợ
+// Cấu trúc: { 'socketId': { id: '...', name: '...' } }
+const activeUsers = {};
+const chattingWithHuman = {};
+
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  // Khi nhận được tin nhắn từ client (sự kiện 'chat-message')
-  socket.on("chat-message", async (msg) => {
-    console.log("User says:", msg);
-
-    // 1. Gửi tin nhắn của user sang Gemini để lấy câu trả lời
-    const botReply = await ChatService.getResponse(msg);
-
-    // 2. Gửi câu trả lời của Bot ngược lại cho client (sự kiện 'bot-reply')
-    socket.emit("bot-reply", botReply);
+  // 1. Admin đăng nhập vào hệ thống chat
+  socket.on("admin-join", () => {
+    socket.join("admin-room"); // Gom tất cả admin vào một phòng
+    console.log("Admin joined chat room");
+    // Gửi danh sách user đang online cho Admin mới vào
+    socket.emit("update-user-list", activeUsers);
   });
 
+  // 2. Khách hàng gửi tin nhắn
+  socket.on("chat-message", async (msg) => {
+    // Lưu thông tin khách hàng (đơn giản hóa, lấy socket.id làm định danh)
+    if (!activeUsers[socket.id]) {
+      activeUsers[socket.id] = {
+        id: socket.id,
+        name: `Khách ${socket.id.substr(0, 4)}`,
+        hasNew: true,
+      };
+      // Báo cho Admin biết có khách mới
+      io.to("admin-room").emit("update-user-list", activeUsers);
+    }
+
+    // Gửi tin nhắn cho Admin
+    io.to("admin-room").emit("message-from-user", {
+      userId: socket.id,
+      text: msg,
+      time: new Date().toLocaleTimeString(),
+    });
+    if (!chattingWithHuman[socket.id]) {
+      const botReply = await ChatService.getResponse(msg);
+      socket.emit("bot-reply", botReply);
+    }
+    // Vẫn gọi Bot trả lời tự động (nếu muốn giữ cả 2)
+    // Hoặc em có thể thêm logic: Nếu đã bấm "Gặp nhân viên" thì Bot im lặng.
+    // Tạm thời cứ để Bot trả lời cho xôm tụ:
+    // const botReply = await ChatService.getResponse(msg);
+    // socket.emit("bot-reply", botReply);
+  });
+
+  // 3. Admin trả lời lại
+  socket.on("admin-reply", (data) => {
+    const { targetUserId, text } = data;
+    chattingWithHuman[targetUserId] = true;
+    // Gửi riêng cho khách hàng đó
+    io.to(targetUserId).emit("bot-reply", `(Nhân viên): ${text}`);
+  });
+
+  // 4. Khách hàng thoát
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    delete activeUsers[socket.id];
+    delete chattingWithHuman[socket.id];
+    io.to("admin-room").emit("update-user-list", activeUsers);
   });
 });
-
 // Start server (Lưu ý dùng httpServer.listen chứ không phải app.listen)
 const PORT = config.app.port;
 httpServer.listen(PORT, () => {
