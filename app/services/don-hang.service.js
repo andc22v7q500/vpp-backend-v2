@@ -120,6 +120,7 @@ class DonHangService {
                 dh.ma_khach_hang,
                 dh.tong_tien, 
                 dh.trang_thai, 
+                dh.phuong_thuc_thanh_toan,
                 dh.ngay_dat,
                 kh.ho_ten AS ten_khach_hang
             FROM don_hang AS dh
