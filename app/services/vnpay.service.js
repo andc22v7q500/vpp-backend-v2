@@ -45,6 +45,46 @@ class VnpayService {
 
     return vnpUrl;
   }
+  verifyReturnUrl(vnp_Params_raw) {
+    let vnp_Params = JSON.parse(JSON.stringify(vnp_Params_raw));
+    const secureHash = vnp_Params["vnp_SecureHash"];
+
+    // Xóa các tham số không cần thiết khỏi object để tạo hash
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
+
+    // Sắp xếp lại object theo key (bắt buộc)
+    vnp_Params = this.sortObject(vnp_Params);
+
+    const secretKey = process.env.VNP_HASH_SECRET;
+    const signData = qs.stringify(vnp_Params, { encode: false });
+    const hmac = crypto.createHmac("sha512", secretKey);
+    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+
+    if (secureHash === signed) {
+      // Checksum hợp lệ, kiểm tra kết quả giao dịch
+      if (vnp_Params["vnp_ResponseCode"] === "00") {
+        return {
+          isSuccess: true,
+          message: "Giao dịch thành công",
+          orderId: vnp_Params["vnp_TxnRef"],
+        };
+      } else {
+        return {
+          isSuccess: false,
+          message: "Giao dịch thất bại",
+          orderId: vnp_Params["vnp_TxnRef"],
+        };
+      }
+    } else {
+      // Checksum không hợp lệ
+      return {
+        isSuccess: false,
+        message: "Chữ ký không hợp lệ",
+        orderId: null,
+      };
+    }
+  }
 
   // Hàm phụ trợ để sắp xếp tham số
   sortObject(obj) {

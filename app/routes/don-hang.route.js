@@ -3,6 +3,7 @@ const donhang = require("../controllers/don-hang.controller");
 const khachHangAuth = require("../middlewares/khach-hang.auth.middleware");
 
 const router = express.Router();
+router.route("/:id/thanh-toan-gia-lap").put(donhang.confirmFakePayment);
 router.use(khachHangAuth);
 router
   .route("/")
@@ -10,4 +11,5 @@ router
   .get(donhang.findAllForUser); // Lấy lịch sử đơn hàng
 
 router.route("/:id").get(donhang.findOneForUser); // Lấy chi tiết một đơn hàng
+
 module.exports = router;

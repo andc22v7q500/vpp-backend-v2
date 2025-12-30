@@ -66,12 +66,21 @@ class DonHangService {
       const fullAddressString = `Người nhận: ${address.ten_nguoi_nhan}\nSĐT: ${address.so_dien_thoai}\nĐịa chỉ: ${address.dia_chi_cu_the}, ${address.phuong_xa}, ${address.quan_huyen}, ${address.tinh_thanh}`;
 
       // 5. TẠO ĐƠN HÀNG (như cũ)
+      const isOnlinePayment = ["vnpay", "vnpay_fake"].includes(
+        payload.phuong_thuc_thanh_toan
+      );
+      const initialStatus = isOnlinePayment ? "cho_thanh_toan" : "cho_xac_nhan";
       const [orderResult] = await connection.execute(
-        "INSERT INTO don_hang (ma_khach_hang, tong_tien, phuong_thuc_thanh_toan, dia_chi_giao_hang, trang_thai) VALUES (?, ?, ?, ?, 'cho_xac_nhan')",
-        [userId, tong_tien, phuong_thuc_thanh_toan, fullAddressString]
+        "INSERT INTO don_hang (ma_khach_hang, tong_tien, phuong_thuc_thanh_toan, dia_chi_giao_hang, trang_thai) VALUES (?, ?, ?, ?, ?)",
+        [
+          userId,
+          tong_tien,
+          payload.phuong_thuc_thanh_toan,
+          fullAddressString,
+          initialStatus,
+        ]
       );
       const newOrderId = orderResult.insertId;
-
       // 6. THÊM CHI TIẾT ĐƠN HÀNG VÀ TRỪ KHO (chỉ với các sản phẩm được chọn)
       const chiTietDonHangValues = selectedItems.map((item) => [
         newOrderId,

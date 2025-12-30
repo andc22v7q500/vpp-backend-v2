@@ -6,7 +6,6 @@ const ApiError = require("../api-error");
 // [USER] Tạo đơn hàng mới
 exports.create = async (req, res, next) => {
   try {
-    // ... (Phần validate input giữ nguyên) ...
     if (
       !req.body.ma_dia_chi ||
       !req.body.phuong_thuc_thanh_toan ||
@@ -15,34 +14,38 @@ exports.create = async (req, res, next) => {
       return next(
         new ApiError(
           400,
-          "Vui lòng chọn địa chỉ, phương thức thanh toán và sản phẩm muốn mua."
+          "Vui lòng chọn địa chỉ, phương thức thanh toán và sản phẩm."
         )
       );
     }
 
-    // 1. Tạo đơn hàng trong CSDL trước
+    // 1. Gọi Service để tạo đơn hàng
     const result = await DonHangService.createOrder(req.user.id, req.body);
 
-    // 2. Kiểm tra phương thức thanh toán
+    // 2. Xử lý trả về URL thanh toán
+
+    // Trường hợp 1: VNPAY Thật
     if (req.body.phuong_thuc_thanh_toan === "vnpay") {
-      // SỬ DỤNG LUÔN result.totalAmount MÀ KHÔNG CẦN GỌI LẠI CSDL
       const vnpUrl = VnpayService.createPaymentUrl(
         req,
         result.orderId,
         result.totalAmount
       );
-
-      return res.send({
-        ...result,
-        paymentUrl: vnpUrl,
-      });
+      return res.send({ ...result, paymentUrl: vnpUrl });
     }
 
-    // Nếu là COD, trả về bình thường
+    // Trường hợp 2: VNPAY Giả lập (Simulator)
+    if (req.body.phuong_thuc_thanh_toan === "vnpay_fake") {
+      // Link trỏ về trang FakePaymentGateway ở Front-end (port 3001)
+      const fakeUrl = `http://localhost:3001/payment-gateway?orderId=${result.orderId}&amount=${result.totalAmount}`;
+      return res.send({ ...result, paymentUrl: fakeUrl });
+    }
+
+    // Trường hợp 3: COD (Không có paymentUrl)
     return res.send(result);
   } catch (error) {
     console.error("CREATE ORDER ERROR:", error);
-    // ... (Phần xử lý lỗi giữ nguyên) ...
+
     return next(
       new ApiError(500, "Đã có lỗi xảy ra phía server khi tạo đơn hàng.")
     );
@@ -138,5 +141,20 @@ exports.findOneOrderAdmin = async (req, res, next) => {
     return res.send(document);
   } catch (error) {
     return next(new ApiError(500, "Lỗi khi lấy chi tiết đơn hàng"));
+  }
+};
+exports.confirmFakePayment = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    // Cần import pool ở đầu file nếu chưa có
+    const pool = require("../config/mysql.config");
+
+    await pool.execute(
+      "UPDATE don_hang SET trang_thai = 'cho_xac_nhan' WHERE id = ?",
+      [orderId]
+    );
+    return res.send({ message: "Thanh toán thành công" });
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi xác nhận thanh toán"));
   }
 };

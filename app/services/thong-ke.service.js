@@ -43,7 +43,10 @@ class ThongKeService {
                 DATE(ngay_dat) AS ngay,
                 SUM(tong_tien) AS doanh_thu
             FROM don_hang
-            WHERE trang_thai = 'hoan_thanh' AND ngay_dat BETWEEN ? AND ?
+            WHERE 
+                trang_thai = 'hoan_thanh' 
+                AND DATE(ngay_dat) >= ? 
+                AND DATE(ngay_dat) <= ?
             GROUP BY DATE(ngay_dat)
             ORDER BY ngay ASC;
         `;
