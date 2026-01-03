@@ -15,7 +15,7 @@ exports.getOverview = async (req, res, next) => {
 exports.getDailyRevenue = async (req, res, next) => {
   try {
     // Lấy ngày bắt đầu và kết thúc từ query string
-    // Ví dụ: /api/admin/thong-ke/doanh-thu?start=2024-01-01&end=2024-01-31
+
     const { start, end } = req.query;
     if (!start || !end) {
       return next(

@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
     io.to("admin-room").emit("update-user-list", activeUsers);
   });
 });
-// Start server (Lưu ý dùng httpServer.listen chứ không phải app.listen)
+// Start server
 const PORT = config.app.port;
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);

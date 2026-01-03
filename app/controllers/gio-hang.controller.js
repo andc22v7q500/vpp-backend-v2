@@ -2,12 +2,13 @@
 
 const GioHangService = require("../services/gio-hang.service");
 const ApiError = require("../api-error");
+const pool = require("../config/mysql.config");
 
 // Thêm sản phẩm vào giỏ
 exports.addItemToCart = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { ma_mau_ma, so_luong } = req.body; // <-- Đổi từ ma_bien_the thành ma_mau_ma
+    const { ma_mau_ma, so_luong } = req.body;
 
     if (!ma_mau_ma || !so_luong || so_luong <= 0) {
       return next(
@@ -63,8 +64,7 @@ exports.updateCartItem = async (req, res, next) => {
       "SELECT ma_gio_hang FROM chi_tiet_gio_hang WHERE id = ?",
       [itemId]
     );
-    // (Đây là một cách, hoặc có thể thiết kế service.update trả về cartId)
-    // Cách đơn giản hơn là chỉ trả về message
+
     return res.send({
       message: "Số lượng sản phẩm đã được cập nhật/xóa thành công",
     });
@@ -91,5 +91,4 @@ exports.removeCartItem = async (req, res, next) => {
   }
 };
 
-// Cần import pool ở đầu file cho hàm update
-const pool = require("../config/mysql.config");
+// const pool = require("../config/mysql.config");

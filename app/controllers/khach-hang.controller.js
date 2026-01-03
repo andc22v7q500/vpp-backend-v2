@@ -62,11 +62,11 @@ exports.signIn = async (req, res, next) => {
     }
 
     // 4. TẠO JWT TOKEN (ĐÂY LÀ CHỖ THAY ĐỔI QUAN TRỌNG NHẤT)
-    // Payload bây giờ không còn vai_tro, thay vào đó ta có thể thêm một 'type'
+
     const token = jwt.sign(
-      { id: customer.id, type: "khach_hang" }, // Payload chỉ chứa id và loại tài khoản
-      process.env.JWT_SECRET, // Lấy khóa bí mật từ file .env
-      { expiresIn: "24h" } // Token hết hạn sau 24 giờ
+      { id: customer.id, type: "khach_hang" },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
     );
 
     // 5. Trả về thông tin khách hàng và token
@@ -82,7 +82,6 @@ exports.signIn = async (req, res, next) => {
   }
 };
 
-// (Các hàm CRUD khác cho khách hàng tự quản lý profile sẽ được thêm sau)
 // Lấy thông tin cá nhân của người dùng đang đăng nhập
 exports.getProfile = async (req, res, next) => {
   try {

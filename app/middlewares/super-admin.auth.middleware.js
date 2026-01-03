@@ -3,7 +3,6 @@ const ApiError = require("../api-error");
 
 const superAdminAuth = (req, res, next) => {
   // Middleware này LUÔN chạy sau 'nhanVienAuth',
-  // nên ta có thể tin rằng req.user đã tồn tại và là một nhân viên.
 
   // KIỂM TRA QUAN TRỌNG: Nhân viên này có phải là ID số 1 không?
   if (req.user && req.user.id === 1) {

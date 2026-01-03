@@ -170,7 +170,6 @@ class SanPhamService {
         "DELETE FROM mau_ma_san_pham WHERE ma_san_pham = ?",
         [id]
       );
-      // (Sau này cần xóa cả các đánh giá, chi tiết giỏ hàng... liên quan)
 
       // Cuối cùng, xóa sản phẩm gốc
       const [result] = await connection.execute(
@@ -182,7 +181,7 @@ class SanPhamService {
       return result.affectedRows > 0;
     } catch (error) {
       await connection.rollback();
-      throw error; // Ném lỗi ra để controller bắt
+      throw error;
     } finally {
       connection.release();
     }

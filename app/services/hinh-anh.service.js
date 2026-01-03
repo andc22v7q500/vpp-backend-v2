@@ -10,7 +10,7 @@ class HinhAnhService {
       "INSERT INTO hinh_anh_san_pham (ma_san_pham, url_hinh_anh) VALUES ?";
     // `files` là một mảng object từ multer, mỗi object có thuộc tính `path`
     // `path` sẽ là 'public\\images\\products\\...'
-    // Ta cần chuẩn hóa lại đường dẫn cho đúng
+
     const values = files.map((file) => [
       productId,
       file.path.replace(/\\/g, "/"),
@@ -28,7 +28,6 @@ class HinhAnhService {
 
   // Xóa một hình ảnh
   async deleteImage(id) {
-    // (Trong thực tế cần xóa cả file ảnh trên server, nhưng để đơn giản ta chỉ xóa trong CSDL)
     const [result] = await pool.execute(
       "DELETE FROM hinh_anh_san_pham WHERE id = ?",
       [id]

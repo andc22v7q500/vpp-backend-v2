@@ -11,18 +11,16 @@ class KhachHangService {
     // Chỉ lấy những trường có trong bảng khach_hang
     const { ho_ten, email, mat_khau, so_dien_thoai } = payload;
 
-    // Câu lệnh SQL mới chỉ có 4 cột (đã bỏ vai_tro)
     const sql = `
             INSERT INTO khach_hang (ho_ten, email, mat_khau, so_dien_thoai) 
             VALUES (?, ?, ?, ?)
         `;
 
-    // Mảng giá trị cũng chỉ còn 4 phần tử
     const [result] = await pool.execute(sql, [
       ho_ten,
       email,
       mat_khau,
-      so_dien_thoai || null, // Nếu không có sđt thì truyền NULL
+      so_dien_thoai || null,
     ]);
 
     return { id: result.insertId, ...payload };
@@ -33,7 +31,6 @@ class KhachHangService {
    * Dùng để lấy profile, không trả về mật khẩu.
    */
   async findById(id) {
-    // Câu SELECT đã bỏ cột vai_tro
     const [rows] = await pool.execute(
       "SELECT id, ho_ten, email, so_dien_thoai FROM khach_hang WHERE id = ?",
       [id]
@@ -89,7 +86,7 @@ class KhachHangService {
     return this.findById(id); // Trả về thông tin mới nhất (không có mật khẩu)
   }
 
-  // Các hàm khác dành cho Admin quản lý (nếu cần)
+  // Các hàm khác dành cho Admin quản lý
   async findAll() {
     const [rows] = await pool.execute(
       "SELECT id, ho_ten, email, so_dien_thoai FROM khach_hang"
@@ -117,8 +114,7 @@ class KhachHangService {
   /**
    * [ADMIN] Xóa một khách hàng.
    * Cần cẩn thận vì nó sẽ gây lỗi nếu khách hàng này đã có đơn hàng (do ràng buộc khóa ngoại).
-   * Trong thực tế, ta thường không xóa cứng mà chỉ "vô hiệu hóa".
-   * Nhưng trong phạm vi tiểu luận, xóa cứng là chấp nhận được.
+
    */
   async delete(id) {
     // Transaction để đảm bảo xóa các dữ liệu liên quan
@@ -135,7 +131,7 @@ class KhachHangService {
         id,
       ]);
       // Lưu ý: Đơn hàng là lịch sử quan trọng, thường không xóa. Nếu muốn xóa, phải xóa chi_tiet_don_hang trước.
-      // Để đơn giản, ta sẽ không xóa đơn hàng liên quan. Nếu CSDL có ràng buộc ON DELETE RESTRICT, lệnh xóa khách hàng sẽ thất bại nếu họ có đơn hàng.
+      // Nếu CSDL có ràng buộc ON DELETE RESTRICT, lệnh xóa khách hàng sẽ thất bại nếu họ có đơn hàng.
 
       // Xóa giỏ hàng
       const [cart] = await connection.execute(

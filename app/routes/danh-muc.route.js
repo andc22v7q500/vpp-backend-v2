@@ -13,11 +13,10 @@ router.route("/").get(danhmuc.findAll);
 router.route("/:id").get(danhmuc.findOne);
 
 // Route THAY ĐỔI DỮ LIỆU: Chỉ nhân viên mới được làm
-router.route("/").post([nhanVienAuth], danhmuc.create); // <-- Áp dụng bảo vệ
+router.route("/").post([nhanVienAuth], danhmuc.create);
 
 router
   .route("/:id")
-  .put([nhanVienAuth], danhmuc.update) // <-- Áp dụng bảo vệ
-  .delete([nhanVienAuth], danhmuc.delete); // <-- Áp dụng bảo vệ
-
+  .put([nhanVienAuth], danhmuc.update)
+  .delete([nhanVienAuth], danhmuc.delete);
 module.exports = router;

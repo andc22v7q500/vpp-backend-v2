@@ -1,6 +1,6 @@
 // app/services/don-hang.service.js
 const pool = require("../config/mysql.config");
-// KHÔNG CẦN import GioHangService nữa, vì ta sẽ lấy items trực tiếp
+
 const DiaChiService = require("./dia-chi.service");
 
 class DonHangService {
@@ -44,7 +44,7 @@ class DonHangService {
         throw new Error("Một vài sản phẩm trong giỏ hàng không hợp lệ.");
       }
 
-      // 3. TÍNH TỔNG TIỀN VÀ KIỂM TRA KHO (như cũ)
+      // 3. TÍNH TỔNG TIỀN VÀ KIỂM TRA KHO
       let tong_tien = 0;
       for (const item of selectedItems) {
         const [variantRows] = await connection.execute(
@@ -62,10 +62,10 @@ class DonHangService {
         tong_tien += item.gia_ban * item.so_luong;
       }
 
-      // 4. ĐÓNG BĂNG ĐỊA CHỈ (như cũ)
+      // 4. ĐÓNG BĂNG ĐỊA CHỈ
       const fullAddressString = `Người nhận: ${address.ten_nguoi_nhan}\nSĐT: ${address.so_dien_thoai}\nĐịa chỉ: ${address.dia_chi_cu_the}, ${address.phuong_xa}, ${address.quan_huyen}, ${address.tinh_thanh}`;
 
-      // 5. TẠO ĐƠN HÀNG (như cũ)
+      // 5. TẠO ĐƠN HÀNG
       const isOnlinePayment = ["vnpay", "vnpay_fake"].includes(
         payload.phuong_thuc_thanh_toan
       );
@@ -109,7 +109,7 @@ class DonHangService {
       return {
         orderId: newOrderId,
         message: "Đặt hàng thành công!",
-        totalAmount: tong_tien, // <--- Thêm dòng này
+        totalAmount: tong_tien,
       };
     } catch (error) {
       await connection.rollback();
@@ -142,7 +142,7 @@ class DonHangService {
 
   /**
    * [ADMIN] Cập nhật trạng thái của một đơn hàng và tạo phiếu xuất nếu cần.
-   * Đây là phiên bản "thông minh", linh hoạt nhất.
+   
    */
   async updateStatus(orderId, staffId, newStatus) {
     const connection = await pool.getConnection();
